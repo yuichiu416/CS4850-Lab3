@@ -60,15 +60,20 @@ while (True):
             ### newuser function
             elif (len(cmd) == 3 and cmd[0] == 'newuser'):
                 createNewUser = True
-                for user in users:
-                    if (user['UserID'] == cmd[1]):
-                        response = 'Server: ' + user['UserID'] + ' already exists. Please try a different username.'
+                #for user in users:
+                for i in range (1, len(users)):
+                    #if (user['UserID'] == cmd[1]):
+                    if(users[i] == cmd[1]):
+                        response = 'Server: ' + users[i] + ' already exists. Please try a different username.'
                         conn.sendall(response.encode('utf-8'))
                         createNewUser = False
                         break
                 if (createNewUser == True):
                     if (len(cmd[1]) < 32 and len(cmd[2]) >= 4 and len(cmd[2]) <= 8):
-                        users.append({'UserID' : cmd[1], 'Password' : cmd[2]})
+                        #users.append({'UserID' : cmd[1], 'Password' : cmd[2]})
+                        with open("users.txt", "a") as userFile:
+                            userFile.write(cmd[1] +' ' + cmd[2] + "\n")
+                            userFile.close()
                         response = 'User ' + cmd[1] + ' created successfully.'
                         conn.sendall(response.encode('utf-8'))
                     else:
