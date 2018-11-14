@@ -1,15 +1,18 @@
 import socket
-import json
 
 users = []
+passwords = []
 activeUsers = []
+loginInfo = {}
 
 with open('users.txt') as file:
     for line in file:
+        line = line.replace("\n", "")
         fields = line.split(' ')
         users.append(fields[0])
-
+        passwords.append(fields[1])
 sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 host = socket.gethostname()
 port = 13381
 sock.bind((host, port))
@@ -44,10 +47,11 @@ while (True):
                     response = 'User ' + currUser + ' is already logged in. Please logout first if you wish to login as a differnt user.'
                     conn.sendall(response.encode('utf-8'))
                 else:
-                    for user in users:
-                        if (user['UserID'] == cmd[1] and user['Password'] == cmd[2]):
-                            response = 'Server: ' + user['UserID'] + ' joins.'
-                            currUser = user['UserID']
+                    for i in range (0, len(users)):
+                        print(cmd[1], users[0], passwords[0], cmd[2])
+                        if (users[i] == cmd[1] and passwords[i] == cmd[2]):
+                            response = 'Server: ' + users[i] + ' joins.'
+                            currUser = users[i]
                             conn.sendall(response.encode('utf-8'))
                             print(currUser + ' login.')
                             break
