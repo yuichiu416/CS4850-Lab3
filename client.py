@@ -17,5 +17,5 @@ while (True):
     if (msg == ':q'):
         break
     ### End if z == ':q':
-    elif (msg == 'logout' and returnMsg != 'No user is currently logged in.'):
-        break
+    #elif (msg == 'logout' and returnMsg != 'No user is currently logged in.'):
+    #    break
