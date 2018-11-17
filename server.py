@@ -150,7 +150,7 @@ def switcher(conn, msg):
         if (currUser == ''):
             return 'Denied. Please login in first.'
         return send(conn, cmd)
-    elif cmd[0] == "who":
+    elif len(cmd) == 1 and cmd == "who":
         return who(conn, cmd)
     elif cmd[0] == "logout":
         if (currUser == ''):
@@ -168,8 +168,11 @@ while True:
     else:
         print("[-] Connected to " + addr[0] + ":" + str(addr[1]))
         # start_new_thread(client_thread, (conn,))
-        msg = (conn.recv(1024)).decode('utf-8')
-        msg = switcher(conn, msg)
-        conn.send(msg.encode('utf-8'))
-        print(msg)
+        try:
+            msg = (conn.recv(1024)).decode('utf-8')
+            msg = switcher(conn, msg)
+            conn.send(msg.encode('utf-8'))
+            print(msg)
+        except:
+            print("there's an error, please check the connection.")
 sock.close()
