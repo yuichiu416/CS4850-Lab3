@@ -134,17 +134,17 @@ def logout():
 
 def switcher(conn, msg):
     cmd = msg.split()
-    if cmd[0] == "login":
+    if len(cmd) > 2 and cmd[0] == "login":
         if currUser != '':
             return 'User ' + currUser + ' is already logged in. Please logout first if you wish to login as a differnt user.'
         return login(conn, cmd)
-    elif cmd[0] == "newuser":
+    elif len(cmd) > 2 and cmd[0] == "newuser":
         return newuser(conn, cmd)
     elif len(cmd) > 3 and cmd[0] == "send" and cmd[1] == "all":
         if (currUser == ''):
             return 'Denied. Please login in first.'
         return sendAll(conn, cmd)
-    elif cmd[0] == "send":
+    elif len(cmd) > 2 and cmd[0] == "send":
         if (currUser == ''):
             return 'Denied. Please login in first.'
         return send(conn, cmd)
