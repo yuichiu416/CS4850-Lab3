@@ -120,8 +120,10 @@ def send(conn, cmd):
     msg = currUser + ': ' + msg
     print('msg is', msg)
     return msg
+
 def who():
     pass
+
 def logout():
     global currUser, activeUsers
     msg = 'Server: ' + currUser + ' left.'
