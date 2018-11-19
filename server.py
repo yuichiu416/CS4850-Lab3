@@ -76,7 +76,6 @@ def login(conn, cmd):
         if (users[i] == cmd[1] and passwords[i] == cmd[2]):
             currUser = users[i]
             activeUsers.update({currUser: conn})
-            print('list in login', activeUsers)
             msg = 'logged in.'
             for key in activeUsers:
                 if(conn == activeUsers[key]):
@@ -126,10 +125,19 @@ def sendAll(conn, cmd):
     msg = ' '.join(cmd) # <message>
     msg = currUser + "<sending all>" + ': ' + msg
     for key in activeUsers:
-        if(activeUsers[key]):
+        if(activeUsers[key] != ''):
             sendMsg(activeUsers[key], msg)
     print(msg)
     return ''
+
+def sendUser(conn, cmd):
+    cmd.remove(cmd[0])#before: send userID <message>
+    target = cmd[0] #before: userID <message>
+    cmd.remove(cmd[0])
+    currUser = getCurrentUser(conn)
+    msg = 'From ' + currUser + ' to ' + target + ': '+ cmd[0]
+    sendMsg(activeUsers[target], msg)
+    sendMsg(activeUsers[currUser], msg)
 
 def send(conn, cmd):
     cmd.remove(cmd[0])
@@ -171,6 +179,8 @@ def switcher(conn, msg):
         return sendMsg(conn, msg)
     elif len(cmd) > 2 and cmd[0] == "send" and cmd[1] == "all":
         return sendAll(conn, cmd)
+    elif len(cmd) > 2 and cmd[0] == "send":
+        return sendUser(conn, cmd)
     elif len(cmd) > 1 and cmd[0] == "send":
         return send(conn, cmd)
     elif len(cmd) == 1 and cmd[0] == "who":
