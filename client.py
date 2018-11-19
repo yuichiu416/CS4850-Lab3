@@ -24,7 +24,7 @@ def receiveMsg(sock):
             msg = sock.recv(1024).decode('utf-8')
             print(msg)
         except:
-            print('Server is Down. You are now Disconnected. Press enter to exit...')
+            print('Server is Down. You are now Disconnected.')
             serverDown = True
 
 threading.Thread(target = receiveMsg, args = (sock,)).start()
