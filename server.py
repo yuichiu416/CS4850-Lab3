@@ -10,7 +10,6 @@ users = []
 passwords = []
 activeUsers = {}
 serverRunning = True
-currUser = ''
 clientAddresses = {}
 conns = {}
 sock = ''
@@ -18,14 +17,20 @@ host = ''
 port = ''
 MAXCLIENTS = 3
 conn = ''
-loggedIn = False
 
 #helper functions
+def checkOnlineNumber(conn):
+    ctr = 0
+    for key in activeUsers:
+        if(activeUsers[key] != ''):
+            ctr += 1
+    return ctr
+
 def commandValidate(conn, msg):
     cmd = msg.split()
-    if len(cmd) > 2 and cmd[0] == "login":
+    if len(cmd) == 3 and cmd[0] == "login" :
         return True
-    elif len(cmd) > 2 and cmd[0] == "newuser":
+    elif len(cmd) == 3 and cmd[0] == "newuser":
         return True
     elif len(cmd) > 2 and cmd[0] == "send" and cmd[1] == "all":
         return True
@@ -35,17 +40,13 @@ def commandValidate(conn, msg):
         return True
     elif len(cmd) == 1 and cmd[0] == "who":
         return True
-    elif cmd[0] == "logout":
+    elif len(cmd) == 1 and cmd[0] == "logout":
         return True
     else:
         msg = "Unknown command or incorrect usage of command. Please try again."
         sendMsg(conn, msg)
-        print(msg)
         return False
 
-    msg = "Unknown command, or incorrect usage of command. Please try again."
-    return False
-    return True
 def getCurrentUser(conn):
     for key in activeUsers:
         if(conn == activeUsers[key]):
@@ -86,7 +87,6 @@ def setup():
     host = socket.gethostname()
     port = 13381
     sock.bind((host, port))
-    MAXCLIENTS = 3
     sock.listen(MAXCLIENTS)
 
 # required functions
@@ -96,13 +96,11 @@ def login(conn, cmd):
     reloadLoginFile()
     for key in activeUsers:
         if(conn == activeUsers[key]):
-            msg = 'Please log out first.'
-            sendMsg(conn, msg)
+            sendMsg(conn, 'Please log out first.')
             return ''
     for key in activeUsers:
         if(cmd[1] == key and activeUsers[key] != ''):
-            msg = 'User ' + key + ' is already logged in. Please logout first if you wish to login as a different user.'
-            sendMsg(conn, msg)
+            sendMsg(conn, 'User ' + key + ' is already logged in. Please login as a different user.')
             return ''
         if (users[i] == cmd[1] and passwords[i] == cmd[2]):
             currUser = users[i]
@@ -113,39 +111,30 @@ def login(conn, cmd):
                     sendMsg(activeUsers[key], msg)
             return currUser +' joined the server.'
         i += 1
-    msg = 'Incorrect UserID/Password.'
-    for key in activeUsers:
-        if(activeUsers[key] != '' and conn == activeUsers[key]):
-            sendMsg(activeUsers[key], msg)
-    msg = 'Bad login attempt from: ' + host
-    sendMsg(conn, msg)
-    return msg
+    sendMsg(conn, 'Incorrect UserID/Password.')
+    return 'Bad login attempt from: ' + host
 
 def newuser(conn, cmd):
-    createdUser = False
     reloadLoginFile()
     for i in range(0, len(users)):
         if (users[i] == cmd[1]):
             msg = 'Server: ' + users[i] + ' already exists. Please try a different username.'
             sendMsg(conn, msg)
-            createNewUser = False
             return msg
     if (len(cmd[1]) < 32 and len(cmd[2]) >= 4 and len(cmd[2]) <= 8):
         with open('users.txt', 'r') as file:
             lines = file.read()
             file.close()
-            with open('users.txt', 'w') as file:
+            with open('users.txt', 'w') as file: # reload the files and write the new user information in the next line
                 file.write(lines)
                 file.write('\n' + cmd[1] + ' ' + cmd[2])
                 file.close()
 
         msg = 'User ' + cmd[1] + ' created successfully by' + host
         sendMsg(conn, msg)
-        createdUser = True
         return msg
     else:
-        msg = 'The length of the UserID should be less than 32, and the length of the Password should be between 4 and 8 characters.'
-        sendMsg(conn, msg)
+        sendMsg(conn, 'The length of the UserID should be less than 32, and the length of the Password should be between 4 and 8 characters.')
         return ''
 
 def sendAll(conn, cmd):
@@ -162,18 +151,22 @@ def sendAll(conn, cmd):
     return ''
 
 def sendUser(conn, cmd):
-    cmd.remove(cmd[0])#before: send userID <message>
-    target = cmd[0] #before: userID <message>
-    cmd.remove(cmd[0])
-    currUser = getCurrentUser(conn)
-    msg = currUser + ' to ' + target + ': '+ cmd[0]
-    sendMsg(activeUsers[target], msg)
-    sendMsg(activeUsers[currUser], msg)
+    if cmd[1] in activeUsers:
+        cmd.remove(cmd[0])# before: send userID <message>
+        target = cmd[0] # before: userID <message>
+        cmd.remove(cmd[0])
+        currUser = getCurrentUser(conn)
+        msg1 = 'From ' + currUser + ': ' + ' '.join(cmd)
+        msg2 = 'To ' + target + ': ' + ' '.join(cmd)
+        sendMsg(activeUsers[target], msg1)
+        sendMsg(activeUsers[currUser], msg2)
+    else:
+        send(conn, cmd)
 
 def send(conn, cmd):
     cmd.remove(cmd[0])
     msg = ' '.join(cmd)
-    msg = currUser + ': ' + msg
+    msg = getCurrentUser(conn) + ': ' + msg
     for key in activeUsers:
         if(activeUsers[key]):
             sendMsg(activeUsers[key], msg)
@@ -183,11 +176,13 @@ def who(conn, cmd):
     global activeUsers
     reloadLoginFile()
     currUser = getCurrentUser(conn)
-    msg = 'Users in the chatroom: '
-    sendMsg(conn, msg)
+    sendMsg(conn, 'Users in the chatroom: ')
     for key in activeUsers:
+        if(activeUsers[key] == conn):
+            sendMsg(activeUsers[currUser], key + ' <me>\n')
+            continue
         if(activeUsers[key] != ''):
-            sendMsg(activeUsers[currUser], key)
+            sendMsg(activeUsers[currUser], key + '\n')
     return ''
 
 def logout(conn):
@@ -195,23 +190,21 @@ def logout(conn):
     for key in activeUsers:
         if(conn == activeUsers[key]):
             activeUsers.update({key : ''})
-            msg = 'logged out'
-            sendMsg(conn, msg)
+            sendMsg(conn, 'logged out')
             msg = key + ' left'
             break
     return msg
 
 def switcher(conn, msg):
     if(not commandValidate(conn, msg)):
-        return
+        return ''
     cmd = msg.split()
     if cmd[0] == "login":
         return login(conn, cmd)
     elif cmd[0] == "newuser":
         return newuser(conn, cmd)
     if (not isLoggedIn(conn)):
-        msg = 'Without logging in, the only supported commands are "login" and "newuser"'
-        return sendMsg(conn, msg)
+        return sendMsg(conn, 'Without logging in, the only supported commands are "login" and "newuser"')
     elif cmd[0] == "send" and cmd[1] == "all":
         return sendAll(conn, cmd)
     elif len(cmd) > 2 and cmd[0] == "send":
@@ -223,20 +216,21 @@ def switcher(conn, msg):
     elif cmd[0] == "logout":
         return logout(conn)
     else:
-        msg = "Unknown command, or incorrect usage of command. Please try again."
-        return sendMsg(conn, msg)
+        return sendMsg(conn, "Unknown command, or incorrect usage of command. Please try again.")
 
 def handleClient(conn, addr):
     global activeUsers
     clientConncted = True
+    if(checkOnlineNumber(conn) >= 3):
+        sendMsg(conn, 'Exceed maximum client number!')
+        return
     while(clientConncted):
         try:
-            msg = conn.recv(1024).decode('utf-8')
-            msg = switcher(conn, msg)
+            msg = switcher(conn, conn.recv(1024).decode('utf-8'))
             if(msg != None):
                 print(msg)
         except:
-            print("there's an error, please check the connection.")
+            print(str(addr) + " is disconnected.")
             clientConncted = False
 
 def runServer():
