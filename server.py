@@ -143,11 +143,9 @@ def sendAll(conn, cmd):
     cmd.remove(cmd[0]) # before: all <message>
     msg = ' '.join(cmd) # <message>
     currUser = getCurrentUser(conn)
-    msg = currUser + "<sending all>" + ': ' + msg
     for key in activeUsers:
         if(activeUsers[key] != ''):
-            sendMsg(activeUsers[key], msg)
-    print(msg)
+            sendMsg(activeUsers[key], currUser + "<sending all>" + ': ' + msg)
     return ''
 
 def sendUser(conn, cmd):

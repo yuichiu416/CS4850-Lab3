@@ -10,25 +10,26 @@ host = socket.gethostname()
 port = 13381
 clientRunning = False
 
-def greeting():
+def help():
     print('My chat room client. Version Two.')
     print('Avaiable commands:')
     print('login <UserID> <Password>')
     print('newuser <UserID> <Password>')
     print('send all <message>')
-    print('send UserID <message>')
+    print('send <UserID> <message>')
     print('send <message>')
     print('who')
     print('logout')
     print('quit')
+    print('help')
 
 def setup():
     global  sock, clientRunning
-    greeting()
     try:
         sock.connect((host, port))
         print ('Connected to', host)
         clientRunning = True
+        help()
     except:
         print('Unable to connect\n')
         sys.exit()
@@ -41,14 +42,17 @@ def receiveMsg(sock):
             msg = sock.recv(1024).decode('utf-8')
             print(msg)
         except:
-            print('Server is Down. You are now Disconnected.')
+            print('You are now Disconnected.')
             serverDown = True
 
 def runServer():
     threading.Thread(target = receiveMsg, args = (sock,)).start()
     while (clientRunning):
         msg = input()
-        if (msg == 'quit'):
+        if(msg == 'help'):
+            help()
+        elif (msg == 'quit'):
+            sock.sendall('logout'.encode('utf-8'))
             break
         sock.sendall(msg.encode('utf-8'))
     print("Quiting, shutting down...")
