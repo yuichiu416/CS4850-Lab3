@@ -174,7 +174,7 @@ def who(conn, cmd):
     global activeUsers
     reloadLoginFile()
     currUser = getCurrentUser(conn)
-    sendMsg(conn, 'Users in the chatroom: ')
+    sendMsg(conn, 'Users in the chatroom: \n')
     for key in activeUsers:
         if(activeUsers[key] == conn):
             sendMsg(activeUsers[currUser], key + ' <me>\n')
