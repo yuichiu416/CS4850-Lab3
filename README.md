@@ -3,7 +3,8 @@
 ### Lab 3 - Chatroom Version 2
 
 This program implements the client side of the CS4850 Lab 3 Version 2 (BONUS). 
-An executable server.py and client.py is in the folder
+An executable server.py and client.py is in the folder 
+
 Usage: 
  
 $python server.py
