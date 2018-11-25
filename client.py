@@ -51,6 +51,7 @@ def runServer():
         msg = input()
         if(msg == 'help'):
             help()
+            continue
         elif (msg == 'quit'):
             sock.sendall('logout'.encode('utf-8'))
             break
