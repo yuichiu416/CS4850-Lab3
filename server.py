@@ -94,6 +94,9 @@ def login(conn, cmd):
     global activeUsers, addr
     i = 0
     reloadLoginFile()
+    if(checkOnlineNumber(conn) >= 3):
+        sendMsg(conn, 'Exceed maximum client number!\nPlease try again when someone logged out.')
+        return ''
     for key in activeUsers:
         if(conn == activeUsers[key]):
             sendMsg(conn, 'Please log out first.')
@@ -219,9 +222,6 @@ def switcher(conn, msg):
 def handleClient(conn, addr):
     global activeUsers
     clientConncted = True
-    if(checkOnlineNumber(conn) >= 3):
-        sendMsg(conn, 'Exceed maximum client number!')
-        return
     while(clientConncted):
         try:
             msg = switcher(conn, conn.recv(1024).decode('utf-8'))
